@@ -1,0 +1,17 @@
+[
+    {
+        "name": "小明",
+        "age": 20,
+        "city": "北京"
+    },
+    {
+        "name": "Renée",
+        "age": 28,
+        "city": "Paris"
+    },
+    {
+        "name": "O'Connor",
+        "age": 35,
+        "city": "Dublin"
+    }
+]
