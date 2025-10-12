@@ -16,7 +16,7 @@ except ImportError:
         return iterable if iterable is not None else []
 
     
-def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_key_column=None, encoding="utf-8", **kwargs)-> List|Dict:
+def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_key_column=None, encoding="utf-8", disable_tqdm=False, **kwargs)-> List|Dict:
     """读取文件，根据传参来判断读取的方式
     最终返回完整的一个list
 
@@ -29,6 +29,7 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
         key_columns (list): 需要取的列名
         main_key_column (str): 当返回为dict时,这个为key,value为其他的值,类型为dict
         output_type (Literal["list", "dict"]): 返回类型,当该值为dict的时候
+        disable_tqdm (bool): 是否关闭进度条
         
         kwargs: 其他参数
             - sheet_name (str): 读取xlsx时，可以指定读取哪个sheet_name
@@ -56,7 +57,7 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
     match file_type:
         case "jsonl":
             with file_name.open("r", encoding=encoding) as f:
-                for line in tqdm(f.readlines()):
+                for line in tqdm(f.readlines(), disable=disable_tqdm):
                     if line := line.strip():
                         line = json.loads(line)
                         if isinstance(return_data, list):
@@ -74,7 +75,7 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
                 data = json.load(f)
                 assert isinstance(data, list), "理论上，这里应该是list[dict]结构，但是不是,目前无法解决这个问题，请自己写把!!!"
                 if output_type == "dict":
-                    for row in tqdm(data):
+                    for row in tqdm(data, disable=disable_tqdm):
                         if main_key_column not in row:
                             raise RuntimeError(f"对象没有{main_key_column=}\n原始数据:{row}")
                         value = row[main_key_column]
@@ -90,11 +91,11 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
             data = pd.read_excel(file_name, **kwargs)
             
             if isinstance(return_data, list):
-                for _, row in tqdm(data.iterrows(), total=data.shape[0]):
+                for _, row in tqdm(data.iterrows(), total=data.shape[0], disable=disable_tqdm):
                     row = row.to_dict()
                     return_data.append(row)
             elif isinstance(return_data, dict):
-                for _, row in tqdm(data.iterrows(), total=data.shape[0]):
+                for _, row in tqdm(data.iterrows(), total=data.shape[0], disable=disable_tqdm):
                     row = row.to_dict()
                     if main_key_column not in row:
                         raise RuntimeError(f"对象没有{main_key_column=}\n原始数据:{row}")
@@ -108,11 +109,11 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
             data = pd.read_csv(file_name, **kwargs)
             
             if isinstance(return_data, list):
-                for _, row in tqdm(data.iterrows(), total=data.shape[0]):
+                for _, row in tqdm(data.iterrows(), total=data.shape[0], disable=disable_tqdm):
                     row = row.to_dict()
                     return_data.append(row)
             elif isinstance(return_data, dict):
-                for _, row in tqdm(data.iterrows(), total=data.shape[0]):
+                for _, row in tqdm(data.iterrows(), total=data.shape[0], disable=disable_tqdm):
                     row = row.to_dict()
                     
                     if main_key_column not in row:
@@ -148,7 +149,6 @@ def save_file(file_name: str|Path, data: list, file_type=None, *, encoding="utf-
             import pandas as pd
             data = pd.DataFrame(data)
             data.to_csv(file_name, **kwargs, index=pd_index)
-    
     
     
     
