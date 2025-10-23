@@ -4,6 +4,7 @@
 # @Author  :   ciaoyizhen
 # @Contact :   yizhen.ciao@gmail.com
 # @Function:   读取文件和保存文件
+import os
 import json
 from pathlib import Path
 from typing import List, Dict, Literal
@@ -106,7 +107,10 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
                 
         case "csv":
             import pandas as pd
-            data = pd.read_csv(file_name, **kwargs)
+            if encoding == "utf-8":  # 解决读取csv的编码问题
+                data = pd.read_csv(file_name, **kwargs)
+            else:
+                data = pd.read_csv(file_name, encoding=encoding, **kwargs)
             
             if isinstance(return_data, list):
                 for _, row in tqdm(data.iterrows(), total=data.shape[0], disable=disable_tqdm):
@@ -129,7 +133,8 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
 def save_file(file_name: str|Path, data: list, file_type=None, *, encoding="utf-8", ensure_ascii=False, json_indent=4, pd_index=False,**kwargs):
     if isinstance(file_name, str):
         file_name = Path(file_name)
-    
+        
+    file_name.parent.mkdir(exist_ok=True, parents=True)
     if file_type is None:
         file_type = file_name.suffix.lstrip(".")
         
