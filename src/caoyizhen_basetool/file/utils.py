@@ -156,4 +156,3 @@ def save_file(file_name: str|Path, data: list, file_type=None, *, encoding="utf-
             data.to_csv(file_name, **kwargs, index=pd_index)
     
     
-    
