@@ -5,17 +5,13 @@
 # @Contact :   yizhen.ciao@gmail.com
 # @Function:   多线程的消费者生产者进程处理
 
+import typer
+import shutil
 from pathlib import Path
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from ..utils import LoggerManager
 from ..file import save_file, read_file
-
-try:
-    from tqdm import tqdm
-except ImportError:
-    # tqdm 没装时，定义一个假的 tqdm 占位符
-    def tqdm(iterable=None, *args, **kwargs):
-        return iterable if iterable is not None else []
+from tqdm import tqdm
 
 
 
@@ -23,7 +19,7 @@ class BaseMultiThreading():
     """
     基类, 实现多线程的消费者生产者的处理, 实现边处理边存储
     """
-    def __init__(self, max_workers:int, save_temp_dir:str|Path, single_file_size, finally_save_path: str|Path=None, *, file_type:str|Path=None):
+    def __init__(self, max_workers:int, save_temp_dir:str|Path, single_file_size, finally_save_path: str|Path=None, *, file_type:str|Path=None, force_save=False):
         """_summary_
 
         Args:
@@ -32,6 +28,7 @@ class BaseMultiThreading():
             single_file_size (int): 临时存储时，单个文件的大小
             finally_save_path (str|Path): 最终完整保存的文件
             file_type (str|Path): 文件存储类型
+            force_save (bool): 是否无视目录,进行覆盖操作
         """
         self.max_workers = max_workers
         self.single_file_size = single_file_size
@@ -42,8 +39,19 @@ class BaseMultiThreading():
         if not isinstance(self.save_temp_dir, Path):
             self.save_temp_dir = Path(self.save_temp_dir)
 
-        if self.save_temp_dir.exists():
-            raise RuntimeError("临时存储目录已经存在,请先确认是否可删除,若不可删除,请更换目录,若可删除,请手动删除")
+        if self.save_temp_dir.exists() and self.save_temp_dir.is_dir():
+            if force_save:
+                try:
+                    self.save_temp_dir.rmdir()  # 只有当 temp_dir 为空时才会成功
+                    print("删除成功")
+                except OSError as e:
+                    force_save_twice = typer.confirm("当前强制保存的目录非空文件,请确实是否删除")
+                    if force_save_twice:
+                        shutil.rmtree(self.save_temp_dir)
+                    else:
+                        raise KeyboardInterrupt("请切换目标目录或手动清理数据后，再执行脚本")
+            else:
+                raise RuntimeError("临时存储目录已经存在,请先确认是否可删除,若不可删除,请更换目录,若可删除,请手动删除")
         self.save_temp_dir.mkdir(parents=True)
 
         if (finally_save_path is not None) and (not isinstance(finally_save_path, Path)):

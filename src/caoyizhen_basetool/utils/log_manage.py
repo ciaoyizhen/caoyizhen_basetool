@@ -6,11 +6,9 @@
 # @Function:   日志的封装
 
 import os
-from .utils import singleton
 from loguru import logger
 from tqdm import tqdm
 
-@singleton
 class LoggerManager:
     """简洁生产级 Loguru 封装类
     
@@ -74,3 +72,5 @@ class LoggerManager:
 
     def exception(self, msg, *args, **kwargs):
         self._logger.exception(msg, *args, **kwargs)
+        
+base_logger = LoggerManager()
