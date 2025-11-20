@@ -27,6 +27,9 @@ class LoggerManager:
         compression: str = "zip",
         enqueue: bool = True,
         console: bool = True,
+        *,
+        file_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{line}</cyan> - <level>{message}</level>",
+        console_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{line}</cyan> - <level>{message}</level>"
     ):
         
         logger.remove()  # 清空默认配置
@@ -42,7 +45,7 @@ class LoggerManager:
                 enqueue=enqueue,  # ✅ 支持多进程
                 level=level,
                 encoding="utf-8",
-                format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<8} | line:{line} | {message}",
+                format=file_format,
             )
 
         # 控制台日志（可选）
@@ -50,7 +53,7 @@ class LoggerManager:
             logger.add(
                 sink=lambda msg: tqdm.write(msg, end=""),
                 level=level,
-                format="<green>{time:HH:mm:ss}</green> | <level>{level:<8}</level> | line:{line} | <level>{message}</level>",
+                format=console_format,
             )
         self._logger = logger
 

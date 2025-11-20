@@ -116,7 +116,7 @@ def read_file(file_name: str|Path, *, output_type="list", file_type=None, main_k
                     if main_key_column not in row:
                         raise RuntimeError(f"对象没有{main_key_column=}\n原始数据:{row}")
                     return_data.add(row[main_key_column])
-                return return_data
+            return return_data
             
                 
         case "csv":
@@ -164,21 +164,21 @@ def save_file(file_name: str|Path, data: list, file_type=None, *, encoding="utf-
             with file_name.open("w", encoding=encoding) as f:
                 for item in data:
                     f.write(json.dumps(item, ensure_ascii=ensure_ascii) + "\n")
-            base_logger.info(f"文件保存至 {file_name} ")
+            base_logger.info(f"文件保存至 {file_name.resolve(strict=True)} ")
         case "json":
             with file_name.open("w", encoding=encoding) as f:
                 json.dump(data, f, ensure_ascii=ensure_ascii, indent=json_indent)
-            base_logger.info(f"文件保存至 {file_name} ")
+            base_logger.info(f"文件保存至 {file_name.resolve(strict=True)} ")
         case "xlsx":
             import pandas as pd
             data = pd.DataFrame(data)
             data.to_excel(file_name, **kwargs, index=pd_index)
-            base_logger.info(f"文件保存至 {file_name} ")
+            base_logger.info(f"文件保存至 {file_name.resolve(strict=True)} ")
         case "csv":
             import pandas as pd
             data = pd.DataFrame(data)
             data.to_csv(file_name, **kwargs, index=pd_index)
-            base_logger.info(f"文件保存至 {file_name} ")
+            base_logger.info(f"文件保存至 {file_name.resolve(strict=True)} ")
         case _:
             raise RuntimeError(f"保存文件识别,无法识别{file_type=},该保存成什么格式")
     
