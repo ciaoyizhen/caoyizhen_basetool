@@ -6,9 +6,12 @@
 # @Function:   读取文件和保存文件
 import os
 import json
+import inspect
 from pathlib import Path
 from typing import List, Dict, Literal
 from tqdm import tqdm
+from functools import wraps
+from main import main
 from ..utils.log_manage import base_logger
 
     
@@ -181,4 +184,88 @@ def save_file(file_name: str|Path, data: list, file_type=None, *, encoding="utf-
             base_logger.info(f"文件保存至 {file_name.resolve(strict=True)} ")
         case _:
             raise RuntimeError(f"保存文件识别,无法识别{file_type=},该保存成什么格式")
+
+def return_to_jsonl(file_path, encoding="utf-8", ensure_ascii=False):
+    """
+    兼容同步和异步函数的写入装饰器
+    """
+    def decorator(func):
+        def write_to_file(result):
+            if result is None: 
+                return # 允许返回None时不写入
+            error_msg = f"被装饰器的函数需要有返回，并且必须是str或dict"
+            
+            if isinstance(result, dict):
+                content = json.dumps(result, ensure_ascii=ensure_ascii)
+            elif isinstance(result, str):
+                content = result
+            else:
+                raise RuntimeError(error_msg)
+            
+            # 确保父目录存在
+            Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(file_path, "a", encoding=encoding) as f:
+                f.write(content + "\n")
+
+        if inspect.iscoroutinefunction(func):
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
+                single_result = await func(*args, **kwargs)
+                write_to_file(single_result)
+                return single_result
+            return wrapper
+        else:
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                single_result = func(*args, **kwargs)
+                write_to_file(single_result)
+                return single_result
+            return wrapper
+    return decorator
+
+
+def filter_data(data:list[dict], filter_set:set, main_key_column:str)-> list[dict]:
+    """将data中的main_key_columns字段根据filter_set的数据进行过滤
+
+    Args:
+        data (list): 待过滤的数据
+        filter_set (_type_): 需要过滤的数据
+        main_key_column (_type_): 待过滤数据的key
+
+    Returns:
+        list[dict]: 过滤后的数据
+    """
+    new_data = []
+    for item in data:
+        if main_key_column not in item:
+            raise RuntimeError(f"data中没有字段{main_key_column=}")
+        sub_item = item[main_key_column]
+        if sub_item in filter_set:
+            continue
+        new_data.append(item)
+    base_logger.info(f"原始数据大小:{len(data)}, 过滤后大小:{len(new_data)}")
+    return new_data
+
+
+def add_suffix_file(file_path: str|Path, suffix: str, *, sep="_")-> Path:
+    """为文件添加真实后缀
+    example:
+    >>> file = "data.jsonl"
+    >>> print(add_suffix_file(file, "response"))
+    >>> Path("data_response.jsonl")
+
+    Args:
+        file_path (str|Path): _description_
+        suffix (str): _description_
+        sep (str): 分隔符
+
+    Returns:
+        Path: 路径
+    """
+    if isinstance(file_path, str):
+        file_path = Path(file_path)
     
+    new_name = f"{file_path.stem}{sep}{suffix}{file_path.suffix}"
+    
+    return Path(new_name)

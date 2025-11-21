@@ -25,26 +25,3 @@ def singleton(cls):
     return get_instance
 
 
-def return_to_jsonl(file_path, encoding="utf-8", ensure_ascii=False):
-    def decorator(func):
-        
-        @wraps(func)
-        def wrapper(*arg, **kwargs):
-            single_result = func(*arg, **kwargs)
-            error_msg = f"被装饰器的函数需要有返回，并且必须是str或dict"
-            if (single_result is None):
-                raise RuntimeError(error_msg)
-            
-            if isinstance(single_result, dict):
-                single_result = json.dumps(single_result, ensure_ascii=ensure_ascii)
-            elif isinstance(single_result, str):
-                pass
-            else:
-                raise RuntimeError(error_msg)
-            
-            with open(file_path, "a", encoding=encoding) as f:
-                f.write(single_result + "\n")
-            
-        return wrapper
-    
-    return decorator
