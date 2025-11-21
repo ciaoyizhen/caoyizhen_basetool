@@ -28,8 +28,8 @@ class LoggerManager:
         enqueue: bool = True,
         console: bool = True,
         *,
-        file_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{line}</cyan> - <level>{message}</level>",
-        console_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{line}</cyan> - <level>{message}</level>"
+        file_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{function}:{line}</cyan> - <level>{message}</level>",
+        console_format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{file}:{function}:{line}</cyan> - <level>{message}</level>"
     ):
         
         logger.remove()  # 清空默认配置
@@ -59,21 +59,21 @@ class LoggerManager:
 
     # ↓↓↓ 对 loguru 常用方法的封装 ↓↓↓
     def debug(self, msg, *args, **kwargs):
-        self._logger.debug(msg, *args, **kwargs)
+        self._logger.opt(depth=1).debug(msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        self._logger.info(msg, *args, **kwargs)
+        self._logger.opt(depth=1).info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        self._logger.warning(msg, *args, **kwargs)
+        self._logger.opt(depth=1).warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        self._logger.error(msg, *args, **kwargs)
+        self._logger.opt(depth=1).error(msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
-        self._logger.critical(msg, *args, **kwargs)
+        self._logger.opt(depth=1).critical(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
-        self._logger.exception(msg, *args, **kwargs)
+        self._logger.opt(depth=1).exception(msg, *args, **kwargs)
         
 base_logger = LoggerManager()
