@@ -19,7 +19,7 @@ class BaseMultiThreading():
     """
     基类, 实现多线程的消费者生产者的处理, 实现边处理边存储
     """
-    def __init__(self, max_workers:int, save_temp_dir:str|Path, single_file_size, finally_save_path: str|Path=None, *, file_type:str|Path=None, force_save=False):
+    def __init__(self, max_workers:int, save_temp_dir:str|Path, single_file_size, finally_save_path: str|Path=None, *, file_type:str|Path=None, force_save=False, **kwargs):
         """_summary_
 
         Args:
@@ -72,8 +72,12 @@ class BaseMultiThreading():
             raise RuntimeError(f"传入的file_type不符合要求或你的文件后缀不符合要求")
 
         self.logger = LoggerManager()
-            
-    def single_data_process(self):
+        self.post_init(**kwargs)
+    
+    def post_init(self, **kwargs):
+        pass
+    
+    def single_data_process(self, item:dict)->dict:
         """
         这个函数实现单个数据怎么处理，输入是一个数据，进行处理，返回一个数据
         需要用户自定义实现
@@ -91,7 +95,6 @@ class BaseMultiThreading():
                 total_data.extend(data)
                 
             save_file(self.finally_save_path, total_data)
-            self.logger.info(f"全部数据成功存储于{self.finally_save_path}")
             
     
     def __call__(self, data:list):
@@ -114,7 +117,6 @@ class BaseMultiThreading():
                         
                         processed_data.clear()
                         self.file_count += 1
-                        self.logger.info(f"文件存储成功,已保存至{temp_file_path}")
                         
                 if processed_data:
                     # 保存最后的数据

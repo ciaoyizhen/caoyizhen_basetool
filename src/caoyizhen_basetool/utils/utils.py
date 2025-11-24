@@ -4,7 +4,6 @@
 # @Author  :   ciaoyizhen
 # @Contact :   yizhen.ciao@gmail.com
 # @Function:   通用工具
-import json
 from functools import wraps
 from threading import Lock
 

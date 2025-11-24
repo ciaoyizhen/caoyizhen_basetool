@@ -4,14 +4,12 @@
 # @Author  :   ciaoyizhen
 # @Contact :   yizhen.ciao@gmail.com
 # @Function:   读取文件和保存文件
-import os
 import json
 import inspect
 from pathlib import Path
 from typing import List, Dict, Literal
 from tqdm import tqdm
 from functools import wraps
-from main import main
 from ..utils.log_manage import base_logger
 
     
