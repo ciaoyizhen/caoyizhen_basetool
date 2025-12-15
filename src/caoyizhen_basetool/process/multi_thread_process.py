@@ -27,11 +27,11 @@ class BaseMultiThreading():
             file_type (str|Path): 文件存储类型
         """
         self.max_workers = max_workers
-        self.save_path = save_path
+        self.save_path = Path(save_path)
         self.file_type = file_type
         
         if self.file_type is None:
-            self.file_type = save_path.suffix.lstrip(".")
+            self.file_type = self.save_path.suffix.lstrip(".")
             
         if self.file_type not in {"json", "jsonl", "xlsx", "csv"}:
             raise RuntimeError(f"传入的file_type不符合要求或你的文件后缀不符合要求")
