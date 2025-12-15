@@ -223,27 +223,7 @@ def return_to_jsonl(file_path, encoding="utf-8", ensure_ascii=False):
     return decorator
 
 
-def filter_data(data:list[dict], filter_set:set, main_key_column:str)-> list[dict]:
-    """将data中的main_key_columns字段根据filter_set的数据进行过滤
 
-    Args:
-        data (list): 待过滤的数据
-        filter_set (_type_): 需要过滤的数据
-        main_key_column (_type_): 待过滤数据的key
-
-    Returns:
-        list[dict]: 过滤后的数据
-    """
-    new_data = []
-    for item in data:
-        if main_key_column not in item:
-            raise RuntimeError(f"data中没有字段{main_key_column=}")
-        sub_item = item[main_key_column]
-        if sub_item in filter_set:
-            continue
-        new_data.append(item)
-    base_logger.info(f"原始数据大小:{len(data)}, 过滤后大小:{len(new_data)}")
-    return new_data
 
 
 def add_suffix_file(file_path: str|Path, suffix: str, *, sep="_")-> Path:
